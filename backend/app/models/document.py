@@ -12,5 +12,21 @@ class DocumentResponse(BaseModel):
     chunk_count: int
     status: str
     uploaded_at: datetime
-    
-    
+
+class QueryRequest(BaseModel):
+    """A question asked about a specific document"""
+    session_id: str
+    question: str
+
+class ChunkResult(BaseModel):
+    """A single retrieved chunk."""
+    text: str
+    page: int
+    chunk_index: int
+    distance: float
+
+class QueryResponse(BaseModel):
+    """Raw retrieval results for a question."""
+    document_id: str
+    question: str
+    results: list[ChunkResult]
