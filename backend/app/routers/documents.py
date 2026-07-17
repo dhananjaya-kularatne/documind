@@ -2,7 +2,7 @@ import os
 import uuid
 import tempfile
 from fastapi import APIRouter, UploadFile, Form
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.models.document import DocumentResponse
 from app.services.pdf_service import extract_text_by_page
@@ -54,5 +54,5 @@ async def upload_document(file: UploadFile, session_id: str | None = Form(None))
         page_count=len(pages),
         chunk_count=len(chunks),
         status="processed",
-        uploaded_at=datetime.utcnow()
+        uploaded_at=datetime.now((timezone.utc))  # noqa: F821
     )

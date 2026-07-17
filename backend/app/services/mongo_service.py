@@ -1,6 +1,6 @@
 import os
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timezone
 
 _client = MongoClient(os.getenv("MONGODB_URI"))
 _db = _client[os.getenv("MONGODB_DB_NAME")]
@@ -22,7 +22,7 @@ def create_document_record(document_id: str, session_id: str, filename: str,
         "chunk_count": chunk_count,
         "chroma_collection": chroma_collection,
         "status": "processed",
-        "uploaded_at": datetime.utcnow()
+        "uploaded_at": datetime.now(timezone.utc)
     }
     documents_collection.insert_one(record)
     return record
