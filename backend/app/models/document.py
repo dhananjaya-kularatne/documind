@@ -30,3 +30,20 @@ class QueryResponse(BaseModel):
     document_id: str
     question: str
     results: list[ChunkResult]
+
+class AskRequest(BaseModel):
+    """A question asked about a document, expecting a generated answer"""
+    session_id: str
+    question: str
+
+class SourceChunk(BaseModel):
+    """A cunk cited as a source for the answer"""
+    page: int
+    text: str
+
+class AskResponse(BaseModel):
+    """A generated, grounded answer with citations"""
+    document_id: str 
+    question:str
+    answer: str
+    sources: list[SourceChunk]
