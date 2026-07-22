@@ -14,36 +14,40 @@ class DocumentResponse(BaseModel):
     uploaded_at: datetime
 
 class QueryRequest(BaseModel):
-    """A question asked about a specific document"""
+    """A question asked about documents in a session."""
     session_id: str
     question: str
+    document_ids: list[str] | None = None
 
 class ChunkResult(BaseModel):
     """A single retrieved chunk."""
     text: str
+    filename: str
     page: int
     chunk_index: int
     distance: float
 
 class QueryResponse(BaseModel):
     """Raw retrieval results for a question."""
-    document_id: str
+    session_id: str
     question: str
     results: list[ChunkResult]
 
 class AskRequest(BaseModel):
-    """A question asked about a document, expecting a generated answer"""
+    """A question asked about documents inn a session, expecting a generated answer"""
     session_id: str
     question: str
+    document_ids: list[str] | None = None
 
 class SourceChunk(BaseModel):
     """A cunk cited as a source for the answer"""
+    filename: str
     page: int
     text: str
 
 class AskResponse(BaseModel):
     """A generated, grounded answer with citations"""
-    document_id: str 
+    session_id: str 
     question:str
     answer: str
     sources: list[SourceChunk]

@@ -8,40 +8,40 @@ from app.services.mongo_service import save_conversation
 router = APIRouter()
 
 
-@router.post("/documents/{document_id}/ask", response_model=AskResponse)
-def ask_document(document_id: str, request: AskRequest):
-    """Retrieve relevant chunks and generate a grounded answer with citations."""
+@router.post("/sessions/{session_id}/ask", response_model=AskResponse)
+def ask_session(session_id: str, request: AskRequest):
+    """Retrieve relevant chunks across the session and generate a grounded answer with citations."""
 
     question_embedding = embed_texts([request.question])[0]
 
     raw_results = query_collection(
-        session_id=request.session_id,
-        document_id=document_id,
+        session_id=session_id,
         query_embedding=question_embedding,
-        top_k=5
+        top_k=5,
+        document_ids=request.document_ids
     )
 
     documents = raw_results["documents"][0]
     metadatas = raw_results["metadatas"][0]
 
     chunks = [
-        {"text": text, "page": metadata["page"]}
+        {"text": text, "page": metadata["page"], "filename": metadata["filename"]}
         for text, metadata in zip(documents, metadatas)
     ]
 
     answer = generate_answer(request.question, chunks)
 
     save_conversation(
-        document_id=document_id,
+        session_id=session_id,
         question=request.question,
         answer=answer,
         source_chunks=chunks
     )
 
-    sources = [SourceChunk(page=c["page"], text=c["text"]) for c in chunks]
+    sources = [SourceChunk(filename=c["filename"], page=c["page"], text=c["text"]) for c in chunks]
 
     return AskResponse(
-        document_id=document_id,
+        session_id=session_id,
         question=request.question,
         answer=answer,
         sources=sources

@@ -27,12 +27,12 @@ def create_document_record(document_id: str, session_id: str, filename: str,
     documents_collection.insert_one(record)
     return record
 
-def save_conversation(document_id: str, question: str, answer: str, source_chunks: list[dict]) -> dict:
+def save_conversation(session_id: str, question: str, answer: str, source_chunks: list[dict]) -> dict:
     """
     Log a question/answer pair for a document.
     """
     record = {
-        "document_id": document_id,
+        "session_id": session_id,
         "question": question, 
         "answer": answer, 
         "source_chunks": source_chunks,

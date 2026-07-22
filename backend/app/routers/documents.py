@@ -1,7 +1,8 @@
 import os
 import uuid
 import tempfile
-from fastapi import APIRouter, UploadFile, Form
+from typing import List
+from fastapi import APIRouter, UploadFile, Form, File
 from datetime import datetime, timezone
 
 from app.models.document import DocumentResponse
@@ -14,45 +15,50 @@ from app.services.mongo_service import create_document_record
 router = APIRouter()
 
 
-@router.post("/documents", response_model=DocumentResponse)
-async def upload_document(file: UploadFile, session_id: str | None = Form(None)):
-    """Upload a PDF, extract text, chunk it, embed it, and store it."""
+@router.post("/documents", response_model=list[DocumentResponse])
+async def upload_documents(files: List[UploadFile] = File(...), session_id: str | None = Form(None)):
+    """Upload one or more PDFs into a session, extract, chunk, embed, and store each."""
 
     if session_id is None:
         session_id = str(uuid.uuid4())
 
-    document_id = str(uuid.uuid4())
+    results = []
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        content = await file.read()
-        tmp.write(content)
-        tmp_path = tmp.name
+    for file in files:
+        document_id = str(uuid.uuid4())
 
-    pages = extract_text_by_page(tmp_path)
-    os.remove(tmp_path)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
 
-    chunks = chunk_pages(pages)
-    chunk_texts = [c["text"] for c in chunks]
-    embeddings = embed_texts(chunk_texts)
+        pages = extract_text_by_page(tmp_path)
+        os.remove(tmp_path)
 
-    collection_name = get_collection_name(session_id, document_id)
-    store_chunks(session_id, document_id, chunks, embeddings)
+        chunks = chunk_pages(pages)
+        chunk_texts = [c["text"] for c in chunks]
+        embeddings = embed_texts(chunk_texts)
 
-    create_document_record(
-        document_id=document_id,
-        session_id=session_id,
-        filename=file.filename,
-        page_count=len(pages),
-        chunk_count=len(chunks),
-        chroma_collection=collection_name
-    )
+        collection_name = get_collection_name(session_id)
+        store_chunks(session_id, document_id, file.filename, chunks, embeddings)
 
-    return DocumentResponse(
-        document_id=document_id,
-        session_id=session_id,
-        filename=file.filename,
-        page_count=len(pages),
-        chunk_count=len(chunks),
-        status="processed",
-        uploaded_at=datetime.now((timezone.utc))  # noqa: F821
-    )
+        create_document_record(
+            document_id=document_id,
+            session_id=session_id,
+            filename=file.filename,
+            page_count=len(pages),
+            chunk_count=len(chunks),
+            chroma_collection=collection_name
+        )
+
+        results.append(DocumentResponse(
+            document_id=document_id,
+            session_id=session_id,
+            filename=file.filename,
+            page_count=len(pages),
+            chunk_count=len(chunks),
+            status="processed",
+            uploaded_at=datetime.now(timezone.utc)
+        ))
+
+    return results
