@@ -15,7 +15,6 @@ class DocumentResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     """A question asked about documents in a session."""
-    session_id: str
     question: str
     document_ids: list[str] | None = None
 
@@ -35,7 +34,6 @@ class QueryResponse(BaseModel):
 
 class AskRequest(BaseModel):
     """A question asked about documents inn a session, expecting a generated answer"""
-    session_id: str
     question: str
     document_ids: list[str] | None = None
 
