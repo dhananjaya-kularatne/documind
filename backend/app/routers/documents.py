@@ -1,22 +1,22 @@
 import os
-import uuid
 import tempfile
-from typing import List
-from fastapi import APIRouter, UploadFile, Form, File
+import uuid
 from datetime import datetime, timezone
 
+from fastapi import APIRouter, File, Form, UploadFile
+
 from app.models.document import DocumentResponse
-from app.services.pdf_service import extract_text_by_page
+from app.services.chroma_service import get_collection_name, store_chunks
 from app.services.chunking_service import chunk_pages
 from app.services.embedding_service import embed_texts
-from app.services.chroma_service import store_chunks, get_collection_name
 from app.services.mongo_service import create_document_record
+from app.services.pdf_service import extract_text_by_page
 
 router = APIRouter()
 
 
 @router.post("/documents", response_model=list[DocumentResponse])
-async def upload_documents(files: List[UploadFile] = File(...), session_id: str | None = Form(None)):
+async def upload_documents(files: list[UploadFile] = File(...), session_id: str | None = Form(None)):
     """Upload one or more PDFs into a session, extract, chunk, embed, and store each."""
 
     if session_id is None:
@@ -36,6 +36,27 @@ async def upload_documents(files: List[UploadFile] = File(...), session_id: str 
         os.remove(tmp_path)
 
         chunks = chunk_pages(pages)
+
+        if not chunks:
+            create_document_record(
+                document_id=document_id,
+                session_id=session_id,
+                filename=file.filename,
+                page_count=len(pages),
+                chunk_count=0,
+                chroma_collection=""
+            )
+            results.append(DocumentResponse(
+                document_id=document_id,
+                session_id=session_id,
+                filename=file.filename,
+                page_count=len(pages),
+                chunk_count=0,
+                status="no_extractable_text",
+                uploaded_at=datetime.now(timezone.utc)
+            ))
+            continue
+
         chunk_texts = [c["text"] for c in chunks]
         embeddings = embed_texts(chunk_texts)
 
