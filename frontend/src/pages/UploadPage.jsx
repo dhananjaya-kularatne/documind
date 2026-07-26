@@ -3,7 +3,7 @@ import { uploadDocuments } from "../api/documents"
 import { useSessionId } from "../hooks/useSessionId"
 
 // The main upload screen — lets a user select one or more PDFs, uploads them to the backend, and stores the returned session ID.
-function UploadPage() {
+function UploadPage({onContinue}) {
   const { sessionId, setSessionId } = useSessionId()
   const [selectedFiles, setSelectedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
@@ -108,6 +108,14 @@ function UploadPage() {
           </div>
         )}
       </div>
+      {uploadedDocs.length > 0 && (
+      <button
+        onClick={onContinue}
+        className="mt-4 w-full h-9 border border-[#2A5B8C] text-[#2A5B8C] rounded text-sm font-medium hover:bg-[#2A5B8C] hover:text-[#FAF9F6] transition-colors"
+      >
+        Continue to chat →
+      </button>
+    )}
     </div>
   )
 }
