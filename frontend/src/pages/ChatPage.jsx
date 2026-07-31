@@ -1,14 +1,15 @@
 import { useState } from "react"
-import { askQuestion } from "../api/documents"
-import { useSessionId } from "../hooks/useSessionId"
 import Citation from "../components/Citation"
+import { deleteDocument } from "../api/documents"
+import { useSessionId } from "../hooks/useSessionId"
 
 // The chat screen — lets the user ask questions about documents already uploaded in their current session, and shows grounded answers with citations back to the source document + page.
-function ChatPage({onBack, uploadedDocs}) {
+function ChatPage({ onBack, uploadedDocs, setUploadedDocs }) {
   const { sessionId } = useSessionId()
   const [question, setQuestion] = useState("")
   const [messages, setMessages] = useState([])
   const [isAsking, setIsAsking] = useState(false)
+  
 
   async function handleAsk() {
     if (!question.trim() || !sessionId) return
@@ -45,17 +46,38 @@ function ChatPage({onBack, uploadedDocs}) {
       handleAsk()
     }
   }
+
+
+  // Removes a document from the session — mirrors the same logic used on the upload screen.
+  async function handleDeleteDocument(documentId) {
+    try {
+      await deleteDocument(documentId, sessionId)
+      setUploadedDocs((prev) => prev.filter((doc) => doc.document_id !== documentId))
+    } catch (err) {
+      console.error("Failed to delete document", err)
+    }
+  }
+
   return (
   <div className="min-h-screen bg-[#FAF9F6] flex">
     {/* Sidebar listing documents in this session */}
     <div className="w-56 border-r border-[#DDD9D2] p-4 hidden md:block">
       <h2 className="text-xs font-mono text-[#6B6862] mb-3">This session</h2>
       {uploadedDocs.map((doc) => (
-        <div key={doc.document_id} className="flex items-center justify-between py-1.5 text-xs">
+        <div key={doc.document_id} className="group flex items-center justify-between py-1.5 text-xs">
           <span className="text-[#1C1B1A] truncate mr-1">{doc.filename}</span>
-          <span className="font-mono text-[10px] text-[#1C1B1A] bg-[#FFD84D] px-1 py-0.5 rounded shrink-0">
-            {doc.page_count}p
-          </span>
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="font-mono text-[10px] text-[#1C1B1A] bg-[#FFD84D] px-1 py-0.5 rounded">
+              {doc.page_count}p
+            </span>
+            <button
+              onClick={() => handleDeleteDocument(doc.document_id)}
+              className="opacity-0 group-hover:opacity-100 text-[#6B6862] cursor-pointer hover:text-red-600 transition-opacity"
+              aria-label="Remove document"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       ))}
     </div>

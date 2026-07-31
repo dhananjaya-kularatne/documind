@@ -32,6 +32,7 @@ function App() {
         <ChatPage
           onBack={() => setCurrentScreen("upload")}
           uploadedDocs={uploadedDocs}
+          setUploadedDocs={setUploadedDocs}
         />
       )}
     </div>
