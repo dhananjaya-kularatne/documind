@@ -41,3 +41,16 @@ def save_conversation(session_id: str, question: str, answer: str, source_chunks
 
     conversations_collection.insert_one(record)
     return record
+
+async def list_session_documents(session_id: str) -> list[dict]:
+    """
+    Return the true, authoritative list of documents for a session,
+    read directly from MongoDB rather than trusted from frontend state.
+    """
+    cursor = documents_collection.find({"session_id": session_id})
+    return list(cursor)
+
+
+def delete_document_record(document_id: str) -> None:
+    """Remove a document's metadata record from MongoDB."""
+    documents_collection.delete_one({"_id": document_id})

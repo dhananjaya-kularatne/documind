@@ -50,3 +50,9 @@ def query_collection(session_id: str, query_embedding: list[float], top_k: int =
         where=where_filter
     )
     return results
+
+def delete_document_chunks(session_id: str, document_id: str) -> None:
+    """Remove all chunks belonging to one document from the session's Chroma collection."""
+    collection_name = get_collection_name(session_id)
+    collection = _client.get_collection(name=collection_name)
+    collection.delete(where={"document_id": document_id})

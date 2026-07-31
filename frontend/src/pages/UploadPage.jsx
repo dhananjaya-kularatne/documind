@@ -1,10 +1,10 @@
 import { useState, useRef } from "react"
-import { uploadDocuments } from "../api/documents"
 import { useSessionId } from "../hooks/useSessionId"
+import { uploadDocuments, deleteDocument } from "../api/documents"
 
 // The main upload screen — lets a user select one or more PDFs, uploads them to the backend, and stores the returned session ID.
 function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
-  const { sessionId, setSessionId } = useSessionId()
+  const { sessionId, setSessionId, clearSessionId } = useSessionId()
   const [selectedFiles, setSelectedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState(null)
@@ -17,6 +17,22 @@ function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
     const files = Array.from(event.target.files)
     setSelectedFiles(files)
   }
+
+  // Clears the current session entirely — both the stored ID and the locally-tracked document list — so the next upload starts completely fresh.
+  function handleStartNewSession() {
+    clearSessionId()
+    setUploadedDocs([])
+  }
+
+// Removes a single document from the session — both from the backend (Chroma + MongoDB) and from the locally-displayed list.
+async function handleDeleteDocument(documentId) {
+  try {
+    await deleteDocument(documentId, sessionId)
+    setUploadedDocs((prev) => prev.filter((doc) => doc.document_id !== documentId))
+  } catch (err) {
+    setError("Failed to remove document.")
+  }
+}
 
   // Sends the selected files to the backend.
   async function handleUpload() {
@@ -60,7 +76,7 @@ function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
           multiple
           onChange={handleFileSelect}
           className="hidden"
-        />
+        />u
 
         {/* Clickable dropzone area */}
         <div
@@ -87,25 +103,39 @@ function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
           {isUploading ? "Uploading..." : "Upload document"}
         </button>
 
-        {/* Show previously uploaded docs in this session, if any */}
         {uploadedDocs.length > 0 && (
-          <div className="mt-7 text-left border-t border-[#DDD9D2] pt-4">
-            <p className="text-xs font-mono text-[#6B6862] mb-2">
-              This session
-            </p>
-            {uploadedDocs.map((doc) => (
-              <div
-                key={doc.document_id}
-                className="flex items-center justify-between py-1.5 text-sm"
-              >
-                <span className="text-[#1C1B1A]">{doc.filename}</span>
-                <span className="font-mono text-xs text-[#1C1B1A] bg-[#FFD84D] px-1.5 py-0.5 rounded">
-                  {doc.page_count}p
-                </span>
-              </div>
-            ))}
+      <div className="mt-7 text-left border-t border-[#DDD9D2] pt-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-mono text-[#6B6862]">This session</p>
+          <button
+            onClick={handleStartNewSession}
+            className="text-xs text-[#6B6862] cursor-pointer hover:text-red-600"
+          >
+            Start new session
+          </button>
+        </div>
+        {uploadedDocs.map((doc) => (
+        <div
+          key={doc.document_id}
+          className="group flex items-center justify-between py-1.5 text-sm"
+        >
+          <span className="text-[#1C1B1A] truncate mr-2">{doc.filename}</span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="font-mono text-xs text-[#1C1B1A] bg-[#FFD84D] px-1.5 py-0.5 rounded">
+              {doc.page_count}p
+            </span>
+            <button
+              onClick={() => handleDeleteDocument(doc.document_id)}
+              className="opacity-0 group-hover:opacity-100 text-[#6B6862] cursor-pointer hover:text-red-600 transition-opacity"
+              aria-label="Remove document"
+            >
+              ✕
+            </button>
           </div>
-        )}
+        </div>
+      ))}
+      </div>
+    )}
       </div>
       {uploadedDocs.length > 0 && (
       <div className="mt-4 text-center">

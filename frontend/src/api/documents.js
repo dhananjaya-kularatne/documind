@@ -47,3 +47,28 @@ export async function askQuestion(sessionId, question, documentIds = null) {
 
   return response.json()
 }
+
+// Fetches the true, authoritative list of documents in a session — directly from the backend/database, not from locally-tracked frontend state (which only reflects what was uploaded this page load).
+export async function getSessionDocuments(sessionId) {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/documents`)
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch session documents")
+  }
+
+  return response.json()
+}
+
+// Removes a single document from a session — deletes its chunks from Chroma and its metadata record from MongoDB.
+export async function deleteDocument(documentId, sessionId) {
+  const response = await fetch(
+    `${API_BASE_URL}/documents/${documentId}?session_id=${sessionId}`,
+    { method: "DELETE" }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to delete document")
+  }
+
+  return response.json()
+}

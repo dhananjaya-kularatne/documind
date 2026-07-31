@@ -11,6 +11,8 @@ from app.services.chunking_service import chunk_pages
 from app.services.embedding_service import embed_texts
 from app.services.mongo_service import create_document_record
 from app.services.pdf_service import extract_text_by_page
+from app.services.mongo_service import create_document_record, list_session_documents, delete_document_record
+from app.services.chroma_service import store_chunks, get_collection_name, delete_document_chunks
 
 router = APIRouter()
 
@@ -83,3 +85,31 @@ async def upload_documents(files: list[UploadFile] = File(...), session_id: str 
         ))
 
     return results
+
+@router.get("/sessions/{session_id}/documents", response_model=list[DocumentResponse])
+async def get_session_documents(session_id: str):
+    """
+    Return the actual list of documents in a session, from the database —
+    this is what the sidebar should display, not locally-tracked frontend state.
+    """
+    docs = await list_session_documents(session_id)
+    return [
+        DocumentResponse(
+            document_id=doc["_id"],
+            session_id=doc["session_id"],
+            filename=doc["filename"],
+            page_count=doc["page_count"],
+            chunk_count=doc["chunk_count"],
+            status=doc.get("status", "processed"),
+            uploaded_at=doc["uploaded_at"],
+        )
+        for doc in docs
+    ]
+
+
+@router.delete("/documents/{document_id}")
+def delete_document(document_id: str, session_id: str):
+    """Remove a document from a session — deletes its chunks from Chroma and its record from MongoDB."""
+    delete_document_chunks(session_id, document_id)
+    delete_document_record(document_id)
+    return {"deleted": True}
