@@ -3,11 +3,10 @@ import { uploadDocuments } from "../api/documents"
 import { useSessionId } from "../hooks/useSessionId"
 
 // The main upload screen — lets a user select one or more PDFs, uploads them to the backend, and stores the returned session ID.
-function UploadPage({onContinue}) {
+function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
   const { sessionId, setSessionId } = useSessionId()
   const [selectedFiles, setSelectedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
-  const [uploadedDocs, setUploadedDocs] = useState([])
   const [error, setError] = useState(null)
 
   // Ref to the hidden file input, so we can trigger it programmatically when the user clicks anywhere on the dropzone.

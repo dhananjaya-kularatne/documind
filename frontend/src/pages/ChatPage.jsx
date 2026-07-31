@@ -4,7 +4,7 @@ import { useSessionId } from "../hooks/useSessionId"
 import Citation from "../components/Citation"
 
 // The chat screen — lets the user ask questions about documents already uploaded in their current session, and shows grounded answers with citations back to the source document + page.
-function ChatPage({onBack}) {
+function ChatPage({onBack, uploadedDocs}) {
   const { sessionId } = useSessionId()
   const [question, setQuestion] = useState("")
   const [messages, setMessages] = useState([])
@@ -45,13 +45,26 @@ function ChatPage({onBack}) {
       handleAsk()
     }
   }
-
   return (
-    <div className="min-h-screen bg-[#FAF9F6] flex flex-col">
+  <div className="min-h-screen bg-[#FAF9F6] flex">
+    {/* Sidebar listing documents in this session */}
+    <div className="w-56 border-r border-[#DDD9D2] p-4 hidden md:block">
+      <h2 className="text-xs font-mono text-[#6B6862] mb-3">This session</h2>
+      {uploadedDocs.map((doc) => (
+        <div key={doc.document_id} className="flex items-center justify-between py-1.5 text-xs">
+          <span className="text-[#1C1B1A] truncate mr-1">{doc.filename}</span>
+          <span className="font-mono text-[10px] text-[#1C1B1A] bg-[#FFD84D] px-1 py-0.5 rounded shrink-0">
+            {doc.page_count}p
+          </span>
+        </div>
+      ))}
+    </div>
+
+    <div className="flex-1 flex flex-col">
       <header className="border-b border-[#DDD9D2] px-4 py-3 flex items-center justify-between">
         <h1 className="font-serif text-lg font-medium text-[#1C1B1A]">DocuMind</h1>
         <button onClick={onBack} className="text-xs text-[#6B6862] cursor-pointer hover:text-[#2A5B8C]">
-             ← Upload more
+          ← Upload more
         </button>
       </header>
 
@@ -95,7 +108,8 @@ function ChatPage({onBack}) {
         </button>
       </div>
     </div>
-  )
+  </div>
+)
 }
 
 export default ChatPage
