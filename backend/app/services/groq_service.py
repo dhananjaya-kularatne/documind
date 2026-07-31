@@ -16,7 +16,7 @@ def generate_answer(question: str, chunks: list[dict]) -> str:
     """
 
     context = "\n\n".join(
-        f"[Page {c['page']}]: {c['text']}" for c in chunks
+    f"[{c['filename']}, Page {c['page']}]: {c['text']}" for c in chunks
     )
 
     user_prompt = f"Context:\n{context}\n\nQuestion: {question}"
