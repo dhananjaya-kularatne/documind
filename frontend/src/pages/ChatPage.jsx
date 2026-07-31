@@ -50,7 +50,7 @@ function ChatPage({onBack}) {
     <div className="min-h-screen bg-[#FAF9F6] flex flex-col">
       <header className="border-b border-[#DDD9D2] px-4 py-3 flex items-center justify-between">
         <h1 className="font-serif text-lg font-medium text-[#1C1B1A]">DocuMind</h1>
-        <button onClick={onBack} className="text-xs text-[#6B6862] hover:text-[#2A5B8C]">
+        <button onClick={onBack} className="text-xs text-[#6B6862] cursor-pointer hover:text-[#2A5B8C]">
              ← Upload more
         </button>
       </header>
@@ -88,7 +88,7 @@ function ChatPage({onBack}) {
         <button
           onClick={handleAsk}
           disabled={isAsking || !question.trim()}
-          className="w-8 h-8 bg-[#2A5B8C] rounded text-[#FAF9F6] disabled:opacity-40"
+          className="w-8 h-8 bg-[#2A5B8C] rounded text-[#FAF9F6] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label="Send"
         >
           ↑

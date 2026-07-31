@@ -83,7 +83,7 @@ function UploadPage({onContinue}) {
         <button
           onClick={handleUpload}
           disabled={selectedFiles.length === 0 || isUploading}
-          className="mt-5 w-full h-9 bg-[#2A5B8C] text-[#FAF9F6] rounded text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          className="mt-5 w-full h-9 bg-[#2A5B8C] text-[#FAF9F6] rounded text-sm font-medium cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isUploading ? "Uploading..." : "Upload document"}
         </button>
@@ -112,7 +112,7 @@ function UploadPage({onContinue}) {
       <div className="mt-4 text-center">
         <button
           onClick={onContinue}
-          className="text-sm text-[#2A5B8C] font-medium hover:underline"
+          className="text-sm text-[#2A5B8C] font-medium cursor-pointer hover:underline"
         >
           Continue to chat →
         </button>
