@@ -109,12 +109,14 @@ function UploadPage({onContinue}) {
         )}
       </div>
       {uploadedDocs.length > 0 && (
-      <button
-        onClick={onContinue}
-        className="mt-4 w-full h-9 border border-[#2A5B8C] text-[#2A5B8C] rounded text-sm font-medium hover:bg-[#2A5B8C] hover:text-[#FAF9F6] transition-colors"
-      >
-        Continue to chat →
-      </button>
+      <div className="mt-4 text-center">
+        <button
+          onClick={onContinue}
+          className="text-sm text-[#2A5B8C] font-medium hover:underline"
+        >
+          Continue to chat →
+        </button>
+      </div>
     )}
     </div>
   )
