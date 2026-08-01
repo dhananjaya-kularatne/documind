@@ -50,6 +50,7 @@ FastAPI backend
 - **Document management.** Individual documents can be removed from a session; this deletes both the associated vector chunks and the metadata record.
 - **Handling of non-extractable PDFs.** Scanned or image-only PDFs with no extractable text are recorded with an explicit status rather than causing the upload to fail.
 - **Responsive layout.** The document list on the chat screen collapses into a toggleable panel on narrow viewports.
+- **No file retention.** Uploaded PDFs are written to a temporary file only for the duration of text extraction and are deleted immediately afterward. Only extracted text chunks, their embeddings, and metadata (filename, page count, timestamps) are persisted — the original file is never stored.
 
 ## Known limitations
 
@@ -58,6 +59,7 @@ RAG retrieval matches chunks to the semantic content of a question. This makes i
 - **Whole-document summarization is not well supported.** A request such as "summarize this document" has no specific content to match against during retrieval, so results can be inconsistent. Reliable summarization typically requires a separate map-reduce approach (chunk-level summaries combined into a final summary), which is outside the scope of this project.
 - **Retrieval quality decreases as session size grows.** Retrieval returns a small, fixed number of the most relevant chunks. This is precise for a small set of related documents, but in a session with many documents, relevant content in less-similar files may not be retrieved. The 20-document session limit is set partly to mitigate this.
 - **Chroma's local-disk persistence depends on the hosting environment.** Some hosting platforms clear local disk storage on restart or redeployment, which would reset the vector store for existing sessions.
+- **Only PDF files are supported.** Text extraction is built specifically around `pdfplumber`; other formats (Word, plain text, etc.) are not handled. The frontend's file picker restricts selection to PDFs, but a non-PDF file submitted directly to the API (bypassing the picker) currently causes an unhandled error rather than a clean rejection, since file-format validation has not yet been added at the API layer.
 
 ## Setup
 
