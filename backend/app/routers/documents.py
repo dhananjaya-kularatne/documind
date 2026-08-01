@@ -12,7 +12,7 @@ from app.services.embedding_service import embed_texts
 from app.services.mongo_service import create_document_record, list_session_documents, delete_document_record
 from app.services.pdf_service import extract_text_by_page
 
-MAX_FILES_PER_UPLOAD = 10
+MAX_FILES_PER_UPLOAD = 4
 MAX_DOCUMENTS_PER_SESSION = 20
 
 router = APIRouter()

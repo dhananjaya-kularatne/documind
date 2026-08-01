@@ -16,8 +16,8 @@ function UploadPage({ onContinue, uploadedDocs, setUploadedDocs, setMessages}) {
   function handleFileSelect(event) {
     const files = Array.from(event.target.files)
 
-    if (files.length > 10) {
-      setError("Please select 10 or fewer files at a time.")
+    if (files.length > 4) {
+      setError("Please select 4 or fewer files at a time.")
       setSelectedFiles([])
       return
     }
