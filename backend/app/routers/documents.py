@@ -1,3 +1,4 @@
+import gc
 import os
 import tempfile
 import uuid
@@ -74,6 +75,9 @@ async def upload_documents(files: list[UploadFile] = File(...), session_id: str 
                 status="no_extractable_text",
                 uploaded_at=datetime.now(timezone.utc)
             ))
+
+            # Free memory from this file's extracted text/pages before moving to the next one.
+            gc.collect()
             continue
 
         chunk_texts = [c["text"] for c in chunks]
@@ -100,6 +104,10 @@ async def upload_documents(files: list[UploadFile] = File(...), session_id: str 
             status="processed",
             uploaded_at=datetime.now(timezone.utc)
         ))
+
+        # Free memory used by this file's pages, chunks, and embeddings before processing the next file in the batch — helps keep peak memory usage lower across multi-file uploads.
+        del pages, chunks, chunk_texts, embeddings
+        gc.collect()
 
     return results
 
