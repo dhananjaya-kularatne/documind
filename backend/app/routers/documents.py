@@ -3,16 +3,17 @@ import tempfile
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.models.document import DocumentResponse
-from app.services.chroma_service import get_collection_name, store_chunks
+from app.services.chroma_service import get_collection_name, store_chunks, delete_document_chunks
 from app.services.chunking_service import chunk_pages
 from app.services.embedding_service import embed_texts
-from app.services.mongo_service import create_document_record
-from app.services.pdf_service import extract_text_by_page
 from app.services.mongo_service import create_document_record, list_session_documents, delete_document_record
-from app.services.chroma_service import store_chunks, get_collection_name, delete_document_chunks
+from app.services.pdf_service import extract_text_by_page
+
+MAX_FILES_PER_UPLOAD = 10
+MAX_DOCUMENTS_PER_SESSION = 20
 
 router = APIRouter()
 
@@ -21,8 +22,24 @@ router = APIRouter()
 async def upload_documents(files: list[UploadFile] = File(...), session_id: str | None = Form(None)):
     """Upload one or more PDFs into a session, extract, chunk, embed, and store each."""
 
+    # Guard 1: reject overly large single uploads before doing any processing.
+    if len(files) > MAX_FILES_PER_UPLOAD:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Too many files in one upload. Please select {MAX_FILES_PER_UPLOAD} or fewer files at a time."
+        )
+
     if session_id is None:
         session_id = str(uuid.uuid4())
+    else:
+        # Guard 2: reject uploads that would push an existing session over the total document limit.
+        existing_docs = await list_session_documents(session_id)
+        if len(existing_docs) + len(files) > MAX_DOCUMENTS_PER_SESSION:
+            raise HTTPException(
+                status_code=400,
+                detail=f"This session already has {len(existing_docs)} document(s). "
+                       f"Adding {len(files)} more would exceed the {MAX_DOCUMENTS_PER_SESSION}-document limit per session."
+            )
 
     results = []
 
