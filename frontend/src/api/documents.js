@@ -1,5 +1,5 @@
 
-const API_BASE_URL = "http://127.0.0.1:8000"
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 // Uploads one or more PDF files into a session.
 // If sessionId is null/undefined, the backend generates a new one and returns it.
