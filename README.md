@@ -44,7 +44,7 @@ FastAPI backend
 
 ## Features
 
-- **Multi-document sessions.** Multiple PDFs can be uploaded into a single session (up to 10 files per upload, 20 documents per session) and queried together, or filtered to specific documents.
+- **Multi-document sessions.** Multiple PDFs can be uploaded into a single session (up to 4 files per upload, 20 documents per session) and queried together, or filtered to specific documents.
 - **Cited answers.** Every generated answer includes the source filename and page number for each chunk it draws from. Citations are filtered by embedding-distance relevance, so low-relevance matches are not shown by default.
 - **Session persistence.** A session identifier is stored in the browser and reused on return visits, so uploaded documents and conversation history persist across page reloads. Sessions can be explicitly reset.
 - **Document management.** Individual documents can be removed from a session; this deletes both the associated vector chunks and the metadata record.
