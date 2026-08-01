@@ -14,7 +14,15 @@ function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
 
   // Called when the user picks files via the file picker.
   function handleFileSelect(event) {
-    const files = Array.from(event.target.files)
+  const files = Array.from(event.target.files)
+
+  if (files.length > 10) {
+    setError("Please select 10 or fewer files at a time.")
+    setSelectedFiles([])
+    return
+  }
+
+    setError(null)
     setSelectedFiles(files)
   }
 
@@ -30,7 +38,7 @@ async function handleDeleteDocument(documentId) {
     await deleteDocument(documentId, sessionId)
     setUploadedDocs((prev) => prev.filter((doc) => doc.document_id !== documentId))
   } catch (err) {
-    setError("Failed to remove document.")
+  setError(err.message)
   }
 }
 
@@ -52,7 +60,7 @@ async function handleDeleteDocument(documentId) {
       setUploadedDocs((prev) => [...prev, ...results])
       setSelectedFiles([])
     } catch (err) {
-      setError("Upload failed. Please try again.")
+      setError(err.message)
     } finally {
       setIsUploading(false)
     }
@@ -76,7 +84,7 @@ async function handleDeleteDocument(documentId) {
           multiple
           onChange={handleFileSelect}
           className="hidden"
-        />u
+        />
 
         {/* Clickable dropzone area */}
         <div

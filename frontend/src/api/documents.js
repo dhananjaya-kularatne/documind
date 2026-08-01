@@ -22,7 +22,10 @@ export async function uploadDocuments(files, sessionId) {
   })
 
   if (!response.ok) {
-    throw new Error("Failed to upload documents")
+    // Read the backend's specific error message (e.g. the upload-limit messages)
+    // instead of showing a generic failure.
+    const errorData = await response.json().catch(() => null)
+    throw new Error(errorData?.detail || "Failed to upload documents")
   }
 
   // Returns an array of DocumentResponse objects, one per uploaded file.
