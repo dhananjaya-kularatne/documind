@@ -8,6 +8,17 @@ Sending a full document to a general-purpose LLM chat interface has practical li
 
 The retrieval, chunking, and generation pipeline is implemented directly against the underlying libraries (pdfplumber, sentence-transformers, Chroma, Groq) rather than through a higher-level RAG framework such as LangChain. This keeps each stage of the pipeline visible and independently testable.
 
+## Screenshots
+
+**Upload screen** — upload one or more PDFs into a session.
+![Upload screen](screenshots/upload-screen.png)
+
+**Chat screen** — ask questions and receive grounded answers with citations.
+![Chat screen](screenshots/chat-screen-1.png)
+
+**Multi-document session** — questions can span several uploaded documents, with citations attributing each fact to the correct source.
+![Multi-document chat](screenshots/chat-screen-2.png)
+
 ## Architecture
 
 ```
