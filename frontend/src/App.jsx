@@ -10,6 +10,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState("upload")
   const [uploadedDocs, setUploadedDocs] = useState([])
   const { sessionId } = useSessionId()
+  const [messages, setMessages] = useState([])
 
   // Whenever we have a sessionId (e.g. on page load, from a previous visit), fetch the real document list for it from the backend.
   useEffect(() => {
@@ -27,12 +28,15 @@ function App() {
           onContinue={() => setCurrentScreen("chat")}
           uploadedDocs={uploadedDocs}
           setUploadedDocs={setUploadedDocs}
+          setMessages={setMessages}
         />
       ) : (
         <ChatPage
           onBack={() => setCurrentScreen("upload")}
           uploadedDocs={uploadedDocs}
           setUploadedDocs={setUploadedDocs}
+          messages={messages}
+          setMessages={setMessages}
         />
       )}
     </div>

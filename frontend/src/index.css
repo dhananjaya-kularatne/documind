@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/* Thin, minimal scrollbar for the chat message list — matches the paper/ink aesthetic instead of the default OS scrollbar with arrow buttons */
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background-color: #DDD9D2;
+  border-radius: 3px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #6B6862;
+}

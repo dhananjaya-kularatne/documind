@@ -4,10 +4,9 @@ import { useSessionId } from "../hooks/useSessionId"
 import Citation from "../components/Citation"
 
 // The chat screen — lets the user ask questions about documents already uploaded in their current session, and shows grounded answers with citations back to the source document + page.
-function ChatPage({ onBack, uploadedDocs, setUploadedDocs }) {
+function ChatPage({ onBack, uploadedDocs, setUploadedDocs, messages, setMessages }) {
   const { sessionId } = useSessionId()
   const [question, setQuestion] = useState("")
-  const [messages, setMessages] = useState([])
   const [isAsking, setIsAsking] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
 
@@ -58,7 +57,7 @@ function ChatPage({ onBack, uploadedDocs, setUploadedDocs }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] flex flex-col md:flex-row">
+    <div className="h-screen bg-[#FAF9F6] flex flex-col md:flex-row overflow-hidden">
       {/* Sidebar listing documents in this session — toggleable overlay on mobile, always visible on desktop */}
       <div
         className={`w-56 border-r border-[#DDD9D2] p-4 md:block ${
@@ -94,7 +93,7 @@ function ChatPage({ onBack, uploadedDocs, setUploadedDocs }) {
         ))}
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
         <header className="border-b border-[#DDD9D2] px-4 py-3 flex items-center justify-between relative z-20 bg-[#FAF9F6]">
           <div className="flex items-center gap-3">
             <button
@@ -106,13 +105,16 @@ function ChatPage({ onBack, uploadedDocs, setUploadedDocs }) {
             </button>
             <h1 className="font-serif text-lg font-medium text-[#1C1B1A]">DocuMind</h1>
           </div>
-          <button onClick={onBack} className="text-xs text-[#6B6862] cursor-pointer hover:text-[#2A5B8C]">
+          <button
+            onClick={onBack}
+            className="text-xs text-[#2A5B8C] border border-[#2A5B8C] rounded px-3 py-1.5 cursor-pointer hover:bg-[#2A5B8C] hover:text-[#FAF9F6] transition-colors"
+          >
             ← Upload more
-          </button>
+        </button>
         </header>
 
         {/* Message list */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 max-w-2xl mx-auto w-full">
+        <div className="chat-scroll flex-1 overflow-y-auto p-4 flex flex-col gap-3 max-w-2xl mx-auto w-full">
           {messages.map((msg, i) =>
             msg.role === "user" ? (
               <div key={i} className="self-end max-w-[78%] bg-[#2A5B8C] text-[#FAF9F6] px-3 py-2 rounded text-sm">

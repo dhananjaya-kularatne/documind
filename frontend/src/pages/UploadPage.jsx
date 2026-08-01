@@ -3,7 +3,7 @@ import { useSessionId } from "../hooks/useSessionId"
 import { uploadDocuments, deleteDocument } from "../api/documents"
 
 // The main upload screen — lets a user select one or more PDFs, uploads them to the backend, and stores the returned session ID.
-function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
+function UploadPage({ onContinue, uploadedDocs, setUploadedDocs, setMessages}) {
   const { sessionId, setSessionId, clearSessionId } = useSessionId()
   const [selectedFiles, setSelectedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
@@ -14,13 +14,13 @@ function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
 
   // Called when the user picks files via the file picker.
   function handleFileSelect(event) {
-  const files = Array.from(event.target.files)
+    const files = Array.from(event.target.files)
 
-  if (files.length > 10) {
-    setError("Please select 10 or fewer files at a time.")
-    setSelectedFiles([])
-    return
-  }
+    if (files.length > 10) {
+      setError("Please select 10 or fewer files at a time.")
+      setSelectedFiles([])
+      return
+    }
 
     setError(null)
     setSelectedFiles(files)
@@ -30,17 +30,18 @@ function UploadPage({onContinue, uploadedDocs, setUploadedDocs}) {
   function handleStartNewSession() {
     clearSessionId()
     setUploadedDocs([])
+    setMessages([])
   }
 
-// Removes a single document from the session — both from the backend (Chroma + MongoDB) and from the locally-displayed list.
-async function handleDeleteDocument(documentId) {
-  try {
-    await deleteDocument(documentId, sessionId)
-    setUploadedDocs((prev) => prev.filter((doc) => doc.document_id !== documentId))
-  } catch (err) {
-  setError(err.message)
+  // Removes a single document from the session — both from the backend (Chroma + MongoDB) and from the locally-displayed list.
+  async function handleDeleteDocument(documentId) {
+    try {
+      await deleteDocument(documentId, sessionId)
+      setUploadedDocs((prev) => prev.filter((doc) => doc.document_id !== documentId))
+    } catch (err) {
+      setError(err.message)
+    }
   }
-}
 
   // Sends the selected files to the backend.
   async function handleUpload() {
@@ -69,11 +70,19 @@ async function handleDeleteDocument(documentId) {
   return (
     <div className="min-h-screen bg-[#FAF9F6] flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md text-center">
+        {/* Simple inline icon — a document with a highlight mark, echoing the citation treatment */}
+        <svg width="40" height="40" viewBox="0 0 40 40" className="mx-auto mb-4" aria-hidden="true">
+          <rect x="8" y="4" width="24" height="32" rx="2" fill="none" stroke="#2A5B8C" strokeWidth="1.5" />
+          <line x1="13" y1="12" x2="27" y2="12" stroke="#2A5B8C" strokeWidth="1.5" />
+          <line x1="13" y1="17" x2="27" y2="17" stroke="#2A5B8C" strokeWidth="1.5" />
+          <rect x="13" y="22" width="10" height="4" fill="#FFD84D" />
+        </svg>
+
         <h1 className="font-serif text-2xl font-medium text-[#1C1B1A] mb-1">
           DocuMind
         </h1>
         <p className="text-sm text-[#6B6862] mb-8">
-          Upload a PDF and ask it questions.
+          Ask questions about your documents and get grounded answers with citations back to the source page.
         </p>
 
         {/* Hidden native file input — triggered by clicking the dropzone below */}
@@ -111,50 +120,67 @@ async function handleDeleteDocument(documentId) {
           {isUploading ? "Uploading..." : "Upload document"}
         </button>
 
-        {uploadedDocs.length > 0 && (
-      <div className="mt-7 text-left border-t border-[#DDD9D2] pt-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-mono text-[#6B6862]">This session</p>
-          <button
-            onClick={handleStartNewSession}
-            className="text-xs text-[#6B6862] cursor-pointer hover:text-red-600"
-          >
-            Start new session
-          </button>
-        </div>
-        {uploadedDocs.map((doc) => (
-        <div
-          key={doc.document_id}
-          className="group flex items-center justify-between py-1.5 text-sm"
-        >
-          <span className="text-[#1C1B1A] truncate mr-2">{doc.filename}</span>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="font-mono text-xs text-[#1C1B1A] bg-[#FFD84D] px-1.5 py-0.5 rounded">
-              {doc.page_count}p
-            </span>
-            <button
-              onClick={() => handleDeleteDocument(doc.document_id)}
-              className="opacity-0 group-hover:opacity-100 text-[#6B6862] cursor-pointer hover:text-red-600 transition-opacity"
-              aria-label="Remove document"
-            >
-              ✕
-            </button>
+        {uploadedDocs.length === 0 && (
+          <div className="mt-8 grid grid-cols-3 gap-3 text-left">
+            <div>
+              <p className="text-xs font-medium text-[#1C1B1A] mb-0.5">Ask anything</p>
+              <p className="text-[11px] text-[#6B6862] leading-snug">Get answers pulled directly from your files.</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-[#1C1B1A] mb-0.5">See the source</p>
+              <p className="text-[11px] text-[#6B6862] leading-snug">Every answer cites the exact page it came from.</p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-[#1C1B1A] mb-0.5">Multiple files</p>
+              <p className="text-[11px] text-[#6B6862] leading-snug">Upload several documents into one session.</p>
+            </div>
           </div>
-        </div>
-      ))}
-      </div>
-    )}
+        )}
+
+        {uploadedDocs.length > 0 && (
+          <div className="mt-7 text-left border-t border-[#DDD9D2] pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-mono text-[#6B6862]">This session</p>
+              <button
+                onClick={handleStartNewSession}
+                className="text-xs text-[#6B6862] cursor-pointer hover:text-red-600"
+              >
+                Start new session
+              </button>
+            </div>
+            {uploadedDocs.map((doc) => (
+              <div
+                key={doc.document_id}
+                className="group flex items-center justify-between py-1.5 text-sm"
+              >
+                <span className="text-[#1C1B1A] truncate mr-2">{doc.filename}</span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="font-mono text-xs text-[#1C1B1A] bg-[#FFD84D] px-1.5 py-0.5 rounded">
+                    {doc.page_count}p
+                  </span>
+                  <button
+                    onClick={() => handleDeleteDocument(doc.document_id)}
+                    className="opacity-0 group-hover:opacity-100 text-[#6B6862] cursor-pointer hover:text-red-600 transition-opacity"
+                    aria-label="Remove document"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       {uploadedDocs.length > 0 && (
-      <div className="mt-4 text-center">
-        <button
-          onClick={onContinue}
-          className="text-sm text-[#2A5B8C] font-medium cursor-pointer hover:underline"
-        >
-          Continue to chat →
-        </button>
-      </div>
-    )}
+        <div className="mt-4 text-center">
+          <button
+            onClick={onContinue}
+            className="text-sm text-[#2A5B8C] font-medium cursor-pointer hover:underline"
+          >
+            Continue to chat →
+          </button>
+        </div>
+      )}
     </div>
   )
 }
